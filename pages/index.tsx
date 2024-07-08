@@ -1,118 +1,194 @@
-import Image from "next/image";
-import { Inter } from "next/font/google";
+// "create a basic CRUD application that saves records to a local folder,
+// accesses them, and performs CRUD operations using the file as storage."
+import axios from "axios";
+import { Suspense, useEffect, useState } from "react";
 
-const inter = Inter({ subsets: ["latin"] });
+export interface PostsType {
+    userId: number;
+    id: number;
+    title: string;
+    body: string;
+}
 
 export default function Home() {
-  return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">pages/index.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    const [data, setData] = useState<PostsType[]>([]);
+    const [showModal, setShowModal] = useState<boolean>(false);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [postsPerPage] = useState<number>(10);
+    const [creatingNew, setCreatingNew] = useState<boolean>(false);
+    const [details, setDetails] = useState<PostsType>({
+        userId: 0,
+        id: 0,
+        title: "",
+        body: "",
+    });
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+    const fetchData = () => {
+        axios
+            .get("/api/posts")
+            .then((res) => {
+                setData(res.data);
+            })
+            .catch((e) => {
+                console.log(e);
+            });
+    };
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+    useEffect(() => {
+        fetchData();
+    }, []);
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+    const handleEdit = (post: PostsType) => {
+        setDetails(post);
+        setShowModal(true);
+        setCreatingNew(false);
+    };
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
+    const handleDelete = (id: number) => {
+        axios
+            .delete(`/api/posts/${id}`)
+            .then((res) => {
+                setData(data.filter((item) => item.id !== id));
+            })
+            .catch((e) => {
+                console.log(e);
+            });
+    };
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setDetails((prevDetails) => ({
+            ...prevDetails,
+            [name]: value,
+        }));
+    };
+
+    const handleCreateNew = () => {
+        setDetails({ userId: 0, id: 0, title: "", body: "" });
+        setShowModal(true);
+        setCreatingNew(true);
+    };
+
+    const handleSubmit = () => {
+        if (creatingNew) {
+            axios
+                .post(`/api/posts`, details)
+                .then((res) => {
+                    setShowModal(false);
+                    fetchData();
+                })
+                .catch((e) => {
+                    console.log(e);
+                });
+        } else {
+            axios
+                .put(`/api/posts/${details.id}`, details)
+                .then((res) => {
+                    setShowModal(false);
+                    fetchData();
+                })
+                .catch((e) => {
+                    console.log(e);
+                });
+        }
+    };
+
+    const indexOfLastPost = currentPage * postsPerPage;
+    const indexOfFirstPost = indexOfLastPost - postsPerPage;
+    const currentPosts = data.slice(indexOfFirstPost, indexOfLastPost);
+
+    const pageNumbers = [];
+    for (let i = 1; i <= Math.ceil(data.length / postsPerPage); i++) {
+        pageNumbers.push(i);
+    }
+
+    const handlePreviousPage = () => {
+        setCurrentPage((prevPage) => (prevPage > 1 ? prevPage - 1 : prevPage));
+    };
+
+    const handleNextPage = () => {
+        setCurrentPage((prevPage) => (prevPage < pageNumbers.length ? prevPage + 1 : prevPage));
+    };
+
+    return (
+        <>
+            <div className="flex flex-col gap-4 p-6">
+                <div className="flex justify-end">
+                    <button
+                        onClick={handleCreateNew}
+                        className={`text-white px-4 py-2 
+                          border-solid border-[2px] 
+                          border-blue-700 bg-blue-700 
+                          hover:bg-blue-500 hover:border-blue-500 
+                          rounded-md`}
+                    >
+                        Create New Post
+                    </button>
+                </div>
+                <Suspense fallback={<div>Loading...</div>}>
+                    <div className="flex flex-wrap justify-center">
+                        {currentPosts?.map(({ id, title, body }: PostsType) => (
+                            <div className="flex gap-4 p-6 border max-w-[90vw]" key={id}>
+                                <p className="">{id}</p>
+                                <p className="w-[35vw] max-w-[35vw]  break-words">{title}</p>
+                                <p className="w-[35vw] max-w-[35vw]  break-words">{body}</p>
+                                <div className="flex gap-2 items-start flex-wrap">
+                                    <button
+                                        className="hover:bg-slate-200 py-2 px-3 rounded-md"
+                                        onClick={() => handleEdit({ id, title, body, userId: 0 })}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className="text-red-700 hover:bg-slate-200 py-2 px-3 rounded-md"
+                                        onClick={() => handleDelete(id)}
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Suspense>
+                <div className="pagination flex justify-center items-center">
+                    <button
+                        onClick={handlePreviousPage}
+                        disabled={currentPage === 1}
+                        className="hover:bg-slate-200 px-2 rounded-full cursor-pointer"
+                    >
+                        &lt;
+                    </button>
+                    <span className="p-4">
+                        {currentPage} of {pageNumbers.length}
+                    </span>
+                    <button
+                        onClick={handleNextPage}
+                        disabled={currentPage === pageNumbers.length}
+                        className="hover:bg-slate-200 px-2 rounded-full cursor-pointer"
+                    >
+                        &gt;
+                    </button>
+                </div>
+            </div>
+            {showModal && (
+                <div className="modal">
+                    <div className="modal-content">
+                        <div className="input-group">
+                            <label htmlFor="title">Title:</label>
+                            <input type="text" name="title" value={details.title} onChange={handleInputChange} />
+                        </div>
+                        <div className="input-group">
+                            <label htmlFor="body">Body:</label>
+                            <textarea name="body" value={details.body} onChange={handleInputChange} />
+                        </div>
+
+                        <div className="modal-content-cta">
+                            <button onClick={handleSubmit}>Save</button>
+                            <button onClick={() => setShowModal(false)}>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
 }
